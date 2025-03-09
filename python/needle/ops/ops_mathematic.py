@@ -287,7 +287,8 @@ def negate(a):
 class Log(TensorOp):
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
-        return array_api.log(a)
+        a_safe = array_api.maximum(a, array_api.finfo(a.dtype).tiny)
+        return array_api.log(a_safe)
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
@@ -325,8 +326,6 @@ class ReLU(TensorOp):
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         origin_input = node.inputs[0]
-        print(type(origin_input))
-        print(type(origin_input.cached_data))
         mask = Tensor((origin_input.cached_data > 0))
         return multiply(out_grad, mask)
         ### END YOUR SOLUTION

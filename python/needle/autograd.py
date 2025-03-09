@@ -402,7 +402,6 @@ def find_topo_sort(node_list: List[Value]) -> List[Value]:
     sort.
     """
     ### BEGIN YOUR SOLUTION
-    print(node_list)
     topo_order = []
     visited = set()
     for node in node_list:

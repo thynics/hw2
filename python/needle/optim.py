@@ -25,7 +25,19 @@ class SGD(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        for p in self.params:
+            if p.grad is None:
+                continue
+            grad = p.grad
+            if self.weight_decay > 0.0:
+                grad += self.weight_decay * p.data
+            if self.momentum > 0.0:
+                if p not in self.u:
+                    self.u[p] = ndl.zeros_like(p.data)
+                self.u[p] = self.momentum * self.u[p] + (1 - self.momentum) * grad
+                p.data -= self.lr * self.u[p]
+            else:
+                p.data -= self.lr * grad
         ### END YOUR SOLUTION
 
     def clip_grad_norm(self, max_norm=0.25):
@@ -33,7 +45,15 @@ class SGD(Optimizer):
         Clips gradient norm of parameters.
         """
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        total = 0.
+        for p in self.params:
+            if p.grad is not None:
+                total += p.grad.data.norm()
+        if total > max_norm:
+            scale = max_norm / total
+            for p in self.params:
+                if p.grad is not None:
+                    p.grad.data.mul_(scale)
         ### END YOUR SOLUTION
 
 
@@ -60,5 +80,19 @@ class Adam(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.t += 1
+        for param in self.params:
+            if param.grad is not None:
+                grad = param.grad.data
+                if param not in self.m.keys():
+                    self.m[param] = ndl.zeros_like(grad)
+                if param not in self.v.keys():
+                    self.v[param] = ndl.zeros_like(grad)
+                grad += self.weight_decay * param
+                self.m[param] = ((self.beta1 * self.m[param]) + (1 - self.beta1) * grad.data)
+                self.v[param] = ((self.beta2 * self.v[param]) + (1 - self.beta2) * grad * grad)
+                u_hat = (self.m[param]/ (1 - self.beta1 ** self.t))
+                v_hat = (self.v[param]/ (1 - self.beta2 ** self.t))
+                param.data -= (self.lr * u_hat / (ndl.ops.power_scalar(v_hat, 0.5).data + self.eps))
+
         ### END YOUR SOLUTION
